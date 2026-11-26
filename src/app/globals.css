@@ -3,11 +3,27 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Gráficas: paleta categórica validada (contraste y daltonismo) contra este fondo */
+  --series-income: #2a78d6;
+  --series-expense: #eb6834;
+  --chart-grid: #e1e0d9;
+  --chart-axis: #c3c2b7;
+  --chart-muted: #898781;
+  --delta-good: #006300;
+  --delta-bad: #d03b3b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-series-income: var(--series-income);
+  --color-series-expense: var(--series-expense);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-axis: var(--chart-axis);
+  --color-chart-muted: var(--chart-muted);
+  --color-delta-good: var(--delta-good);
+  --color-delta-bad: var(--delta-bad);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,6 +32,14 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* Los mismos tonos, ajustados para fondo oscuro (no una inversión automática) */
+    --series-income: #3987e5;
+    --series-expense: #d95926;
+    --chart-grid: #2c2c2a;
+    --chart-axis: #383835;
+    --delta-good: #0ca30c;
+    --delta-bad: #e66767;
   }
 }
 
