@@ -51,7 +51,7 @@ export async function createTransaction(
   const { amount, ...rest } = result.data;
   await getDb().insert(transactions).values({ ...rest, amountCents: amount });
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { status: "success", message: "Transacción guardada", key: Date.now() };
 }
 
@@ -75,12 +75,12 @@ export async function updateTransaction(
 
   if (updated.length === 0) return { status: "error", message: "La transacción ya no existe" };
 
-  revalidatePath("/");
-  redirect("/");
+  revalidatePath("/", "layout");
+  redirect("/transacciones");
 }
 
 export async function deleteTransaction(id: string): Promise<void> {
   if (!z.uuid().safeParse(id).success) return;
   await getDb().delete(transactions).where(eq(transactions.id, id));
-  revalidatePath("/");
+  revalidatePath("/", "layout");
 }

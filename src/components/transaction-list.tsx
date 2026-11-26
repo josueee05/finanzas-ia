@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { listTransactions } from "@/db/queries";
 import { getCategory } from "@/lib/categories";
-import { formatDate } from "@/lib/dates";
+import { formatDate, formatMonth } from "@/lib/dates";
 import { formatCents } from "@/lib/money";
 import { DeleteButton } from "./delete-button";
 
-export async function TransactionList() {
-  const rows = await listTransactions();
+export async function TransactionList({ month }: { month: string }) {
+  const rows = await listTransactions({ month });
 
   if (rows.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-black/15 p-10 text-center text-sm text-zinc-500 dark:border-white/15">
-        Aún no hay transacciones. Registra la primera con el formulario.
+        No hay movimientos en <span className="capitalize">{formatMonth(month)}</span>. Registra uno
+        con el formulario.
       </div>
     );
   }

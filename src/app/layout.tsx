@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { MainNav } from "@/components/main-nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -26,10 +27,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <header className="border-b border-black/10 dark:border-white/10">
-          <div className="mx-auto flex h-14 w-full max-w-5xl items-center px-4">
+          <div className="mx-auto flex h-14 w-full max-w-5xl items-center gap-6 px-4">
             <Link href="/" className="font-semibold tracking-tight">
               💸 Finanzas IA
             </Link>
+            <MainNav />
           </div>
         </header>
         {children}

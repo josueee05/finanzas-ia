@@ -12,7 +12,7 @@ export const metadata = { title: "Editar transacción" };
 export default function EditTransactionPage({ params }: PageProps<"/transacciones/[id]/editar">) {
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-4 px-4 py-8">
-      <Link href="/" className="text-sm text-zinc-500 hover:text-foreground">
+      <Link href="/transacciones" className="text-sm text-zinc-500 hover:text-foreground">
         ← Volver
       </Link>
       <h1 className="text-2xl font-semibold tracking-tight">Editar transacción</h1>
