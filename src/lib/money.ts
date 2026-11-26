@@ -8,6 +8,22 @@ export function formatCents(cents: number): string {
   return formatter.format(cents / 100);
 }
 
+const wholeFormatter = new Intl.NumberFormat(LOCALE, {
+  style: "currency",
+  currency: CURRENCY,
+  maximumFractionDigits: 0,
+});
+
+/**
+ * Formato para ticks de ejes. Un eje usa un solo estilo: completo si su valor máximo
+ * es menor a 10,000 ("Q 2,500") y compacto si lo alcanza ("Q 0", "Q 5K", "Q 15K").
+ */
+export function formatCentsAxis(cents: number, axisMaxCents: number): string {
+  const units = cents / 100;
+  if (axisMaxCents / 100 < 10_000 || units === 0) return wholeFormatter.format(units);
+  return `${wholeFormatter.format(units / 1000)}K`;
+}
+
 /**
  * Convierte un monto escrito por el usuario ("125", "125.5", "1,250.75") a centavos
  * sin pasar por aritmética de punto flotante. Devuelve null si no es válido.
