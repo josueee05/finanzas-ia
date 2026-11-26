@@ -1,6 +1,23 @@
 @import "tailwindcss";
 
+/*
+ * Tema: sigue al sistema por defecto, pero el usuario puede forzarlo con el botón
+ * del header, que pone data-theme="light" | "dark" en <html>.
+ * La variante `dark:` de Tailwind respeta ambas cosas.
+ */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:not([data-theme="light"], [data-theme="light"] *)) {
+      @slot;
+    }
+  }
+}
+
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
 
@@ -12,6 +29,33 @@
   --chart-muted: #898781;
   --delta-good: #006300;
   --delta-bad: #d03b3b;
+}
+
+/* Los mismos tonos, ajustados para fondo oscuro (no una inversión automática) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --series-income: #3987e5;
+    --series-expense: #d95926;
+    --chart-grid: #2c2c2a;
+    --chart-axis: #383835;
+    --delta-good: #0ca30c;
+    --delta-bad: #e66767;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --series-income: #3987e5;
+  --series-expense: #d95926;
+  --chart-grid: #2c2c2a;
+  --chart-axis: #383835;
+  --delta-good: #0ca30c;
+  --delta-bad: #e66767;
 }
 
 @theme inline {
@@ -26,21 +70,6 @@
   --color-delta-bad: var(--delta-bad);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-
-    /* Los mismos tonos, ajustados para fondo oscuro (no una inversión automática) */
-    --series-income: #3987e5;
-    --series-expense: #d95926;
-    --chart-grid: #2c2c2a;
-    --chart-axis: #383835;
-    --delta-good: #0ca30c;
-    --delta-bad: #e66767;
-  }
 }
 
 body {
