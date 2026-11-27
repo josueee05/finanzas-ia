@@ -20,8 +20,9 @@ const globalForDb = globalThis as unknown as { db?: Db };
  */
 export function getDb(): Db {
   if (!globalForDb.db) {
-    const dataDir = process.env.PGLITE_DATA_DIR ?? "./.data/pglite";
-    mkdirSync(dataDir, { recursive: true });
+    const dataDir = process.env.PGLITE_DATA_DIR || "./.data/pglite";
+    // "memory://" = base en memoria (tests): no hay directorio que crear
+    if (!dataDir.startsWith("memory://")) mkdirSync(dataDir, { recursive: true });
     globalForDb.db = drizzle({ client: new PGlite(dataDir), schema });
   }
   return globalForDb.db;
