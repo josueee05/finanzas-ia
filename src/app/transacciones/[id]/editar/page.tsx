@@ -5,6 +5,7 @@ import { z } from "zod";
 import { updateTransaction } from "@/app/actions";
 import { TransactionForm } from "@/components/transaction-form";
 import { aiMode } from "@/lib/ai/categorize";
+import { requireUser } from "@/lib/auth/current-user";
 import { getTransaction } from "@/db/queries";
 import { centsToInput } from "@/lib/money";
 
@@ -30,7 +31,9 @@ async function EditForm({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const tx = await getTransaction(id);
+  const user = await requireUser();
+  // Un id de otro usuario se trata igual que uno inexistente: 404
+  const tx = await getTransaction(user.id, id);
   if (!tx) notFound();
 
   return (

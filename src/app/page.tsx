@@ -7,6 +7,7 @@ import { MonthlyChart } from "@/components/dashboard/monthly-chart";
 import { StatTiles } from "@/components/dashboard/stat-tiles";
 import { MonthPicker } from "@/components/month-picker";
 import { getExpensesByCategory, getMonthlyTotals, getTotals } from "@/db/queries";
+import { requireUser } from "@/lib/auth/current-user";
 import { addMonths, currentMonth, formatMonth, parseMonth } from "@/lib/dates";
 import { formatCents } from "@/lib/money";
 
@@ -23,6 +24,7 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
 
 async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
   const { mes } = await searchParams;
+  const user = await requireUser();
   await connection();
   const now = currentMonth();
   // Un mes inválido o futuro en la URL cae al mes actual
@@ -31,10 +33,10 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/">, "searchParams">)
   const prevMonth = addMonths(month, -1);
 
   const [totals, prev, byCategory, monthly] = await Promise.all([
-    getTotals(month),
-    getTotals(prevMonth),
-    getExpensesByCategory(month),
-    getMonthlyTotals(month, 6),
+    getTotals(user.id, month),
+    getTotals(user.id, prevMonth),
+    getExpensesByCategory(user.id, month),
+    getMonthlyTotals(user.id, month, 6),
   ]);
 
   return (

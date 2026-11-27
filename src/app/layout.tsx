@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { AssistantLauncher } from "@/components/assistant/assistant-launcher";
 import { MainNav } from "@/components/main-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
 import { themeScript } from "@/lib/theme";
 import "./globals.css";
 
@@ -41,8 +42,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               💸 <span className="hidden sm:inline">Finanzas IA</span>
             </Link>
             <MainNav />
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1 sm:gap-2">
               <ThemeToggle />
+              <Suspense fallback={null}>
+                <UserMenu />
+              </Suspense>
             </div>
           </div>
         </header>

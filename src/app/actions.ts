@@ -1,12 +1,12 @@
 "use server";
 
-import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getDb } from "@/db";
-import { transactions, type TransactionType } from "@/db/schema";
+import { deleteTransactionRow, insertTransaction, updateTransactionRow } from "@/db/queries";
+import type { TransactionType } from "@/db/schema";
 import { suggestCategoryFor, type Suggestion } from "@/lib/ai/categorize";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { AUTO_CATEGORY, getCategory } from "@/lib/categories";
 import {
   transactionInput,
@@ -14,8 +14,9 @@ import {
   type TransactionFormValues,
 } from "@/lib/validation";
 
-// TODO (Fase 5): verificar la sesión del usuario en cada acción. Las Server Actions
-// se pueden invocar con un POST directo, no solo desde la UI.
+// Las Server Actions se pueden invocar con un POST directo, no solo desde la UI:
+// cada una verifica la sesión, y las consultas filtran siempre por ese usuario.
+const SESSION_EXPIRED: FormState = { status: "error", message: "Tu sesión expiró. Vuelve a entrar." };
 
 function readForm(formData: FormData): TransactionFormValues {
   const get = (k: string) => String(formData.get(k) ?? "");
@@ -50,6 +51,8 @@ function autoMessage(category: string, auto: Suggestion | null) {
 /** Sugerencia en vivo mientras el usuario escribe la descripción. */
 export async function suggestCategory(type: string, description: string): Promise<Suggestion | null> {
   if (!isType(type) || typeof description !== "string") return null;
+  // Solo usuarios con sesión (la IA cuesta dinero)
+  if (!(await getCurrentUser())) return null;
   return suggestCategoryFor(description, type);
 }
 
@@ -71,6 +74,9 @@ export async function createTransaction(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const user = await getCurrentUser();
+  if (!user) return SESSION_EXPIRED;
+
   const submitted = readForm(formData);
   const { values, auto } = await resolveAutoCategory(submitted);
   const result = validate(values);
@@ -78,7 +84,7 @@ export async function createTransaction(
   if (result.state) return { ...result.state, values: submitted };
 
   const { amount, ...rest } = result.data;
-  await getDb().insert(transactions).values({ ...rest, amountCents: amount });
+  await insertTransaction(user.id, { ...rest, amountCents: amount });
 
   revalidatePath("/", "layout");
   return { status: "success", message: autoMessage(rest.category, auto), key: Date.now() };
@@ -90,6 +96,8 @@ export async function updateTransaction(
   formData: FormData,
 ): Promise<FormState> {
   if (!z.uuid().safeParse(id).success) return { status: "error", message: "ID inválido" };
+  const user = await getCurrentUser();
+  if (!user) return SESSION_EXPIRED;
 
   const submitted = readForm(formData);
   const { values } = await resolveAutoCategory(submitted);
@@ -97,13 +105,9 @@ export async function updateTransaction(
   if (result.state) return { ...result.state, values: submitted };
 
   const { amount, ...rest } = result.data;
-  const updated = await getDb()
-    .update(transactions)
-    .set({ ...rest, amountCents: amount })
-    .where(eq(transactions.id, id))
-    .returning({ id: transactions.id });
-
-  if (updated.length === 0) return { status: "error", message: "La transacción ya no existe" };
+  // Si el id es de otro usuario, no se actualiza nada (y respondemos igual que si no existiera)
+  const updated = await updateTransactionRow(user.id, id, { ...rest, amountCents: amount });
+  if (!updated) return { status: "error", message: "La transacción ya no existe" };
 
   revalidatePath("/", "layout");
   redirect("/transacciones");
@@ -111,6 +115,8 @@ export async function updateTransaction(
 
 export async function deleteTransaction(id: string): Promise<void> {
   if (!z.uuid().safeParse(id).success) return;
-  await getDb().delete(transactions).where(eq(transactions.id, id));
+  const user = await getCurrentUser();
+  if (!user) return;
+  await deleteTransactionRow(user.id, id);
   revalidatePath("/", "layout");
 }

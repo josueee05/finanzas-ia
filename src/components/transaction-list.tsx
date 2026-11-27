@@ -5,8 +5,8 @@ import { formatDate, formatMonth } from "@/lib/dates";
 import { formatCents } from "@/lib/money";
 import { DeleteButton } from "./delete-button";
 
-export async function TransactionList({ month }: { month: string }) {
-  const rows = await listTransactions({ month });
+export async function TransactionList({ userId, month }: { userId: string; month: string }) {
+  const rows = await listTransactions(userId, { month });
 
   if (rows.length === 0) {
     return (

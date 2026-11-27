@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { createTransaction } from "@/app/actions";
 import { aiMode } from "@/lib/ai/categorize";
+import { requireUser } from "@/lib/auth/current-user";
 import { MonthPicker } from "@/components/month-picker";
 import { TransactionForm } from "@/components/transaction-form";
 import { TransactionList, TransactionListSkeleton } from "@/components/transaction-list";
@@ -37,6 +38,7 @@ export default function TransactionsPage({ searchParams }: PageProps<"/transacci
 
 async function FilteredList({ searchParams }: Pick<PageProps<"/transacciones">, "searchParams">) {
   const { mes } = await searchParams;
+  const user = await requireUser();
   await connection();
   const now = currentMonth();
   const parsed = parseMonth(mes);
@@ -45,7 +47,7 @@ async function FilteredList({ searchParams }: Pick<PageProps<"/transacciones">, 
   return (
     <>
       <MonthPicker month={month} currentMonth={now} basePath="/transacciones" />
-      <TransactionList month={month} />
+      <TransactionList userId={user.id} month={month} />
     </>
   );
 }

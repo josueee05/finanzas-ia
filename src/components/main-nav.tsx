@@ -24,7 +24,10 @@ export function MainNav() {
 }
 
 function ActiveLinks() {
-  return <Links pathname={usePathname()} />;
+  const pathname = usePathname();
+  // En la pantalla de entrada todavía no hay sesión: no tiene sentido mostrar el menú
+  if (pathname === "/entrar") return null;
+  return <Links pathname={pathname} />;
 }
 
 function Links({ pathname }: { pathname: string | null }) {
