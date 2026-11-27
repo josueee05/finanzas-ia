@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { AiMode } from "@/lib/ai/categorize";
 import type { ChatEvent } from "@/lib/assistant/claude-chat";
+import { AssistantAvatar } from "./assistant-avatar";
 import { RichText } from "./rich-text";
 
 type Message = {
@@ -13,7 +14,15 @@ type Message = {
   error?: boolean;
 };
 
-export function Chat({ mode, suggestions }: { mode: AiMode; suggestions: string[] }) {
+type ChatProps = {
+  mode: AiMode;
+  suggestions: string[];
+  /** Si se pasa, muestra un botón para cerrar el panel */
+  onClose?: () => void;
+  inputRef?: React.Ref<HTMLInputElement>;
+};
+
+export function Chat({ mode, suggestions, onClose, inputRef }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
@@ -89,14 +98,20 @@ export function Chat({ mode, suggestions }: { mode: AiMode; suggestions: string[
   }
 
   return (
-    <div className="flex min-h-[60vh] flex-1 flex-col rounded-xl border border-black/10 dark:border-white/10">
-      <div className="flex items-center justify-between border-b border-black/10 px-4 py-2.5 dark:border-white/10">
-        <span
-          className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-medium text-zinc-500 dark:bg-white/10"
-          title={mode === "claude" ? "Respuestas generadas por Claude" : "Modo demo: preguntas frecuentes, sin API key"}
-        >
-          ✨ {mode === "claude" ? "Claude" : "Modo demo"}
-        </span>
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex items-center gap-3 border-b border-black/10 px-4 py-3 dark:border-white/10">
+        <AssistantAvatar className="size-8" />
+        <div className="min-w-0 flex-1">
+          <h2 id="assistant-title" className="text-sm font-semibold leading-tight">
+            Asistente
+          </h2>
+          <p
+            className="text-xs text-zinc-500"
+            title={mode === "claude" ? "Respuestas generadas por Claude" : "Modo demo: preguntas frecuentes, sin API key"}
+          >
+            ✨ {mode === "claude" ? "Con Claude" : "Modo demo"}
+          </p>
+        </div>
         {messages.length > 0 && (
           <button
             type="button"
@@ -110,14 +125,24 @@ export function Chat({ mode, suggestions }: { mode: AiMode; suggestions: string[
             Nueva conversación
           </button>
         )}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Cerrar asistente"
+            className="grid size-8 place-items-center rounded-md text-zinc-500 transition-colors hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
+          >
+            <svg viewBox="0 0 20 20" className="size-4" aria-hidden>
+              <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4" aria-live="polite">
         {messages.length === 0 ? (
           <div className="m-auto flex max-w-md flex-col items-center gap-4 py-8 text-center">
-            <span className="text-4xl" aria-hidden>
-              💬
-            </span>
+            <AssistantAvatar className="size-14" />
             <div>
               <p className="font-medium">Pregúntale a tus finanzas</p>
               <p className="mt-1 text-sm text-zinc-500">
@@ -151,6 +176,7 @@ export function Chat({ mode, suggestions }: { mode: AiMode; suggestions: string[
         className="flex gap-2 border-t border-black/10 p-3 dark:border-white/10"
       >
         <input
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ej. ¿Cuánto gasté en transporte el mes pasado?"

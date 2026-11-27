@@ -14,7 +14,7 @@ Aplicación web para controlar ingresos y gastos personales, con categorización
 - ✅ Categorías por tipo de movimiento, con validación en servidor
 - ✅ Datos de ejemplo de 6 meses para probar la app al instante
 - ✅ Categorización automática: escribes "Almuerzo en Pollo Campero" y la categoría se elige sola, con [Claude](https://www.anthropic.com/claude) o, sin API key, con un clasificador local
-- ✅ Asistente: pregúntale a tus finanzas ("¿en qué gasté más este mes?", "¿cómo voy vs. el mes pasado?", "dame consejos para ahorrar") y responde con tus datos reales, en streaming
+- ✅ Asistente en un panel lateral (botón flotante, disponible en todas las páginas y la conversación se conserva al navegar): pregúntale a tus finanzas ("¿en qué gasté más este mes?", "¿cómo voy vs. el mes pasado?", "dame consejos para ahorrar") y responde con tus datos reales, en streaming
 - ⏳ Cuentas de usuario, tests automatizados y demo en línea
 
 ## Stack

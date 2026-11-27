@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { Suspense } from "react";
+import { AssistantLauncher } from "@/components/assistant/assistant-launcher";
 import { MainNav } from "@/components/main-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { themeScript } from "@/lib/theme";
@@ -45,6 +47,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </header>
         {children}
+        {/* Asistente flotante: disponible en todas las páginas */}
+        <Suspense fallback={null}>
+          <AssistantLauncher />
+        </Suspense>
       </body>
     </html>
   );
