@@ -13,6 +13,11 @@ let claudeDisabled = false;
 
 export const aiMode = (): AiMode => (isClaudeEnabled() && !claudeDisabled ? "claude" : "demo");
 
+/** Lo llama cualquier función que reciba un 401/403 de la API (categorizar o chat). */
+export function markClaudeUnavailable() {
+  claudeDisabled = true;
+}
+
 // Caché en memoria: la misma descripción no se vuelve a mandar a la API.
 const cache = new Map<string, Suggestion | null>();
 const CACHE_LIMIT = 500;

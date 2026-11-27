@@ -1,8 +1,8 @@
-import { and, desc, eq, gte, lt, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, lt, sql, type SQL } from "drizzle-orm";
 import { connection } from "next/server";
 import { addMonths, monthRange } from "@/lib/dates";
 import { getDb } from ".";
-import { transactions } from "./schema";
+import { transactions, type TransactionType } from "./schema";
 
 /*
  * Todas las lecturas son datos "en vivo" de la petición. PGlite corre dentro del
@@ -26,6 +26,46 @@ export async function listTransactions({ month, limit = 100 }: { month?: string;
     .where(month ? inMonth(month) : undefined)
     .orderBy(desc(transactions.date), desc(transactions.createdAt))
     .limit(limit);
+}
+
+export type SearchFilters = {
+  month?: string;
+  type?: TransactionType;
+  category?: string;
+  /** Texto a buscar en la descripción (sin distinguir mayúsculas) */
+  text?: string;
+  orderBy?: "fecha" | "monto";
+  limit?: number;
+};
+
+/** Búsqueda flexible de movimientos (la usa el asistente). */
+export async function searchTransactions({
+  month,
+  type,
+  category,
+  text,
+  orderBy = "fecha",
+  limit = 20,
+}: SearchFilters) {
+  await connection();
+  return getDb()
+    .select()
+    .from(transactions)
+    .where(
+      and(
+        month ? inMonth(month) : undefined,
+        type ? eq(transactions.type, type) : undefined,
+        category ? eq(transactions.category, category) : undefined,
+        // El texto va como parámetro, nunca concatenado en el SQL
+        text ? ilike(transactions.description, `%${text.replace(/[%_\\]/g, "\\$&")}%`) : undefined,
+      ),
+    )
+    .orderBy(
+      ...(orderBy === "monto"
+        ? [desc(transactions.amountCents)]
+        : [desc(transactions.date), desc(transactions.createdAt)]),
+    )
+    .limit(Math.min(Math.max(limit, 1), 50));
 }
 
 export async function getTransaction(id: string) {
