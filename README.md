@@ -1,6 +1,6 @@
 # 💸 Finanzas IA
 
-[![CI](https://github.com/josuee05/finanzas-ia/actions/workflows/ci.yml/badge.svg)](https://github.com/josuee05/finanzas-ia/actions/workflows/ci.yml)
+[![CI](https://github.com/josueee05/finanzas-ia/actions/workflows/ci.yml/badge.svg)](https://github.com/josueee05/finanzas-ia/actions/workflows/ci.yml)
 
 Aplicación web de finanzas personales: registra ingresos y gastos, muestra a dónde se va tu dinero y tiene un **asistente con IA** al que le preguntas en tus propias palabras. La categoría de cada gasto se elige sola.
 
@@ -116,3 +116,7 @@ pnpm test
 - **Integración:** consultas SQL reales sobre PGlite en memoria, incluidos aislamiento entre usuarios, ciclo de vida de invitados y comodines SQL escapados.
 
 El CI corre lint, tipos, tests y build en Node 22 y 24 en cada push.
+
+## Licencia
+
+[MIT](LICENSE)
