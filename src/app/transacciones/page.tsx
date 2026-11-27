@@ -1,9 +1,11 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { createTransaction } from "@/app/actions";
+import { aiMode } from "@/lib/ai/categorize";
 import { MonthPicker } from "@/components/month-picker";
 import { TransactionForm } from "@/components/transaction-form";
 import { TransactionList, TransactionListSkeleton } from "@/components/transaction-list";
+import { AUTO_CATEGORY } from "@/lib/categories";
 import { currentMonth, parseMonth, todayISO } from "@/lib/dates";
 
 export const metadata = { title: "Transacciones" };
@@ -55,7 +57,8 @@ async function NewTransactionForm() {
     <TransactionForm
       action={createTransaction}
       submitLabel="Guardar"
-      initialValues={{ type: "gasto", amount: "", description: "", category: "", date: todayISO() }}
+      aiMode={aiMode()}
+      initialValues={{ type: "gasto", amount: "", description: "", category: AUTO_CATEGORY, date: todayISO() }}
     />
   );
 }

@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { z } from "zod";
 import { updateTransaction } from "@/app/actions";
 import { TransactionForm } from "@/components/transaction-form";
+import { aiMode } from "@/lib/ai/categorize";
 import { getTransaction } from "@/db/queries";
 import { centsToInput } from "@/lib/money";
 
@@ -36,6 +37,7 @@ async function EditForm({ params }: { params: Promise<{ id: string }> }) {
     <TransactionForm
       action={updateTransaction.bind(null, id)}
       submitLabel="Guardar cambios"
+      aiMode={aiMode()}
       initialValues={{
         type: tx.type,
         amount: centsToInput(tx.amountCents),
