@@ -2,7 +2,7 @@
 
 Aplicación web para controlar ingresos y gastos personales, con categorización automática y un asistente financiero impulsado por IA (en desarrollo).
 
-> 🚧 **Estado:** Fase 2 de 5 completada: transacciones y dashboard con gráficas.
+> 🚧 **Estado:** Fase 3 de 5 completada: transacciones, dashboard y categorización automática con IA.
 
 ## Funcionalidades
 
@@ -13,7 +13,7 @@ Aplicación web para controlar ingresos y gastos personales, con categorización
 - ✅ Filtro por mes que se guarda en la URL (`?mes=2026-11`), compartible y con historial del navegador
 - ✅ Categorías por tipo de movimiento, con validación en servidor
 - ✅ Datos de ejemplo de 6 meses para probar la app al instante
-- ⏳ Categorización automática de gastos con IA
+- ✅ Categorización automática: escribes "Almuerzo en Pollo Campero" y la categoría se elige sola, con [Claude](https://www.anthropic.com/claude) o, sin API key, con un clasificador local
 - ⏳ Chat para hacerle preguntas a tus finanzas
 - ⏳ Cuentas de usuario, tests automatizados y demo en línea
 
@@ -26,6 +26,7 @@ Aplicación web para controlar ingresos y gastos personales, con categorización
 | Base de datos | PostgreSQL ([PGlite](https://pglite.dev) en local) + [Drizzle ORM](https://orm.drizzle.team) |
 | Validación    | [Zod 4](https://zod.dev)                                                      |
 | Gráficas      | SVG + HTML a mano, sin librerías de gráficas                                  |
+| IA            | [Claude API](https://docs.claude.com) (`@anthropic-ai/sdk`) con salidas estructuradas |
 | Lenguaje      | TypeScript (modo estricto)                                                    |
 
 ## Cómo correrlo
@@ -41,6 +42,10 @@ pnpm dev        # http://localhost:3000
 No necesitas Docker ni cuentas externas: la base de datos es PostgreSQL real corriendo en WebAssembly ([PGlite](https://pglite.dev)) y se guarda en `.data/`.
 
 > Ejecuta los comandos `db:*` con el servidor detenido: PGlite solo permite un proceso a la vez sobre el mismo directorio de datos.
+
+### IA: modo demo o Claude
+
+La app funciona completa **sin ninguna API key**: en modo demo, la categoría se elige con un clasificador local de palabras clave en español (con comercios y servicios de Guatemala). Para usar Claude, copia `.env.example` como `.env.local` y agrega tu `ANTHROPIC_API_KEY`. La etiqueta junto a "Categoría" en el formulario indica el modo activo (✨ Demo / ✨ IA).
 
 ### Scripts
 
@@ -69,7 +74,9 @@ src/
 │   ├── schema.ts                       # Esquema de Drizzle
 │   ├── queries.ts                      # Consultas de lectura
 │   └── index.ts                        # Conexión (lazy) a la base de datos
-└── lib/                                # Dinero, fechas, categorías y validación
+└── lib/
+    ├── ai/                             # Categorización: Claude, reglas locales y orquestador
+    └── ...                             # Dinero, fechas, categorías, validación y tema
 drizzle/                                # Migraciones SQL generadas
 scripts/                                # migrate y seed
 ```
@@ -83,12 +90,15 @@ scripts/                                # migrate y seed
 - **Gráficas hechas a mano (SVG + HTML) en lugar de una librería:** control total del diseño y cero JavaScript extra en las barras por categoría (son HTML puro, renderizadas en el servidor). La gráfica mensual es el único componente cliente: mide su ancho con `ResizeObserver` y maneja hover y foco.
 - **Gráficas accesibles:** la paleta se validó con un script contra contraste y los tres tipos de daltonismo, en modo claro y oscuro. Cada gráfica tiene leyenda, tooltip con teclado (no solo mouse) y una vista de tabla, así que ningún dato depende solo del color o del hover.
 - **El filtro vive en la URL (`searchParams`)** y no en estado de React: el dashboard sigue siendo un Server Component, el link se puede compartir y los botones atrás/adelante funcionan.
+- **IA con salidas estructuradas:** Claude responde un JSON validado contra un esquema Zod cuyo `enum` son exactamente las categorías válidas, así que nunca puede inventar una. La clasificación usa `effort: "low"` porque es una tarea simple (más rápido y barato).
+- **La IA nunca rompe la app:** si no hay API key, si la API falla o si rechaza la solicitud, se usa el clasificador local. Con una key inválida se desactiva Claude tras el primer error (en vez de reintentar en cada tecla), y las respuestas se guardan en caché para no pagar dos veces por la misma descripción.
+- **El usuario tiene la última palabra:** la categoría "✨ Automática" muestra en vivo dónde se guardará el movimiento (con *debounce* de 400 ms y descartando respuestas viejas); elegir una categoría a mano siempre gana.
 - **PGlite en desarrollo, Postgres gestionado en producción:** el mismo esquema y las mismas migraciones de Drizzle sirven para ambos.
 
 ## Roadmap
 
 - [x] **Fase 1:** base de datos y CRUD de transacciones
 - [x] **Fase 2:** dashboard con gráficas
-- [ ] **Fase 3:** categorización automática con IA
+- [x] **Fase 3:** categorización automática con IA
 - [ ] **Fase 4:** chat con tus finanzas
 - [ ] **Fase 5:** autenticación, tests, CI y deploy
