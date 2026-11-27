@@ -24,20 +24,20 @@ const allCategories = [...CATEGORIES.gasto, ...CATEGORIES.ingreso].map((c) => c.
 
 const json = (data: unknown) => JSON.stringify(data);
 
-/** Herramientas: todas son de solo lectura sobre los datos del usuario. */
-const tools = [
+/** Herramientas: todas son de solo lectura y solo ven los datos del usuario de la sesión. */
+const makeTools = (userId: string) => [
   betaZodTool({
     name: "resumen_mes",
     description:
       "Ingresos, gastos, balance y tasa de ahorro de un mes, junto con los del mes anterior para comparar.",
     inputSchema: z.object({ mes: month }),
-    run: async ({ mes }) => json(await monthSummary(mes)),
+    run: async ({ mes }) => json(await monthSummary(userId, mes)),
   }),
   betaZodTool({
     name: "gastos_por_categoria",
     description: "Gastos de un mes agrupados por categoría, de mayor a menor, con porcentaje del total.",
     inputSchema: z.object({ mes: month }),
-    run: async ({ mes }) => json(await expensesByCategory(mes)),
+    run: async ({ mes }) => json(await expensesByCategory(userId, mes)),
   }),
   betaZodTool({
     name: "buscar_movimientos",
@@ -54,7 +54,7 @@ const tools = [
     }),
     run: async (i) =>
       json(
-        await findTransactions({
+        await findTransactions(userId, {
           month: i.mes,
           type: i.tipo,
           category: i.categoria,
@@ -71,7 +71,7 @@ const tools = [
       hasta_mes: month,
       meses: z.number().int().min(1).max(12).describe("Cuántos meses hacia atrás (incluido hasta_mes)"),
     }),
-    run: async ({ hasta_mes, meses }) => json(await monthlySeries(hasta_mes, meses)),
+    run: async ({ hasta_mes, meses }) => json(await monthlySeries(userId, hasta_mes, meses)),
   }),
 ];
 
@@ -106,6 +106,7 @@ Categorías disponibles: ${categories.join(", ")}.`;
  * y aquí solo reenviamos el texto que llega por streaming.
  */
 export async function streamClaudeChat(
+  userId: string,
   history: ChatTurn[],
   emit: (event: ChatEvent) => void,
   signal?: AbortSignal,
@@ -119,7 +120,7 @@ export async function streamClaudeChat(
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       system: systemPrompt(),
-      tools,
+      tools: makeTools(userId),
       messages: history.map((t) => ({ role: t.role, content: t.content })),
       max_iterations: 6,
       stream: true,

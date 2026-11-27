@@ -16,9 +16,9 @@ import { addMonths } from "@/lib/dates";
 
 const q = (cents: number) => Math.round(cents) / 100;
 
-export async function monthSummary(month: string) {
+export async function monthSummary(userId: string, month: string) {
   const prevMonth = addMonths(month, -1);
-  const [t, p] = await Promise.all([getTotals(month), getTotals(prevMonth)]);
+  const [t, p] = await Promise.all([getTotals(userId, month), getTotals(userId, prevMonth)]);
   const rate = (inc: number, bal: number) => (inc > 0 ? Math.round((bal / inc) * 100) : null);
   return {
     mes: month,
@@ -37,8 +37,8 @@ export async function monthSummary(month: string) {
   };
 }
 
-export async function expensesByCategory(month: string) {
-  const rows = await getExpensesByCategory(month);
+export async function expensesByCategory(userId: string, month: string) {
+  const rows = await getExpensesByCategory(userId, month);
   const total = rows.reduce((s, r) => s + r.totalCents, 0);
   return {
     mes: month,
@@ -53,8 +53,8 @@ export async function expensesByCategory(month: string) {
   };
 }
 
-export async function findTransactions(filters: SearchFilters) {
-  const rows = await searchTransactions(filters);
+export async function findTransactions(userId: string, filters: SearchFilters) {
+  const rows = await searchTransactions(userId, filters);
   return {
     resultados: rows.length,
     movimientos: rows.map((r) => ({
@@ -67,8 +67,8 @@ export async function findTransactions(filters: SearchFilters) {
   };
 }
 
-export async function monthlySeries(lastMonth: string, count: number) {
-  const rows = await getMonthlyTotals(lastMonth, Math.min(Math.max(count, 1), 12));
+export async function monthlySeries(userId: string, lastMonth: string, count: number) {
+  const rows = await getMonthlyTotals(userId, lastMonth, Math.min(Math.max(count, 1), 12));
   return rows.map((r) => ({
     mes: r.month,
     ingresos: q(r.incomeCents),

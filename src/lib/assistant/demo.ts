@@ -84,7 +84,7 @@ export const DEMO_SUGGESTIONS = [
   "Dame consejos para ahorrar",
 ];
 
-export async function answerDemo(question: string): Promise<string> {
+export async function answerDemo(userId: string, question: string): Promise<string> {
   const text = normalize(question);
   const intent = detectIntent(text);
   // "¿Cómo voy comparado con el mes pasado?": el mes pasado es la referencia,
@@ -96,7 +96,7 @@ export async function answerDemo(question: string): Promise<string> {
 
   switch (intent) {
     case "top_categorias": {
-      const data = await expensesByCategory(month);
+      const data = await expensesByCategory(userId, month);
       if (data.categorias.length === 0) return `No registraste gastos en ${label}.`;
       const top = data.categorias.slice(0, 3);
       return [
@@ -111,7 +111,7 @@ export async function answerDemo(question: string): Promise<string> {
 
     case "gasto_categoria": {
       const id = detectCategory(text)!;
-      const [now, prev] = await Promise.all([expensesByCategory(month), expensesByCategory(addMonths(month, -1))]);
+      const [now, prev] = await Promise.all([expensesByCategory(userId, month), expensesByCategory(userId, addMonths(month, -1))]);
       const cat = now.categorias.find((c) => c.id === id);
       const before = prev.categorias.find((c) => c.id === id);
       const name = CATEGORIES.gasto.find((c) => c.id === id)!.label;
@@ -131,14 +131,14 @@ export async function answerDemo(question: string): Promise<string> {
     }
 
     case "gastos": {
-      const s = await monthSummary(month);
+      const s = await monthSummary(userId, month);
       if (s.movimientos === 0) return `No hay movimientos registrados en ${label}.`;
       return `En ${label} tus gastos suman **${money(s.gastos)}**, contra ${money(s.ingresos)} de ingresos.`;
     }
 
     case "ingresos": {
-      const data = await findTransactions({ month, type: "ingreso", orderBy: "monto", limit: 5 });
-      const s = await monthSummary(month);
+      const data = await findTransactions(userId, { month, type: "ingreso", orderBy: "monto", limit: 5 });
+      const s = await monthSummary(userId, month);
       if (s.ingresos === 0) return `No registraste ingresos en ${label}.`;
       return [
         `En ${label} recibiste **${money(s.ingresos)}**:`,
@@ -147,7 +147,7 @@ export async function answerDemo(question: string): Promise<string> {
     }
 
     case "ahorro": {
-      const s = await monthSummary(month);
+      const s = await monthSummary(userId, month);
       if (s.ingresos === 0) return `No registraste ingresos en ${label}, así que no puedo calcular tu ahorro.`;
       const verdict =
         s.tasa_ahorro_pct! >= 20 ? "¡Muy bien! Estás arriba del 20% recomendado. 🎉"
@@ -158,7 +158,7 @@ export async function answerDemo(question: string): Promise<string> {
     }
 
     case "mas_grande": {
-      const data = await findTransactions({ month, type: "gasto", orderBy: "monto", limit: 3 });
+      const data = await findTransactions(userId, { month, type: "gasto", orderBy: "monto", limit: 3 });
       if (data.resultados === 0) return `No registraste gastos en ${label}.`;
       const [first, ...rest] = data.movimientos;
       return [
@@ -168,7 +168,7 @@ export async function answerDemo(question: string): Promise<string> {
     }
 
     case "comparar": {
-      const s = await monthSummary(month);
+      const s = await monthSummary(userId, month);
       const p = s.mes_anterior;
       if (s.movimientos === 0) return `No hay movimientos en ${label} para comparar.`;
       const pct = (a: number, b: number) => (b > 0 ? Math.round(((a - b) / b) * 100) : null);
@@ -189,7 +189,7 @@ export async function answerDemo(question: string): Promise<string> {
     }
 
     case "consejos": {
-      const [s, cats] = await Promise.all([monthSummary(month), expensesByCategory(month)]);
+      const [s, cats] = await Promise.all([monthSummary(userId, month), expensesByCategory(userId, month)]);
       if (s.movimientos === 0) return `No hay movimientos en ${label} para analizar todavía.`;
       const tips: string[] = [];
       const top = cats.categorias.find((c) => c.id !== "vivienda") ?? cats.categorias[0];

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { normalize } from "@/lib/ai/rules";
 import { addMonths, currentMonth } from "@/lib/dates";
-import { resetDb, tx } from "@/test/db";
+import { resetDb, tx, USER_A } from "@/test/db";
 import { answerDemo, detectCategory, detectIntent, detectMonth } from "./demo";
 
 const n = normalize;
@@ -61,39 +61,39 @@ describe("answerDemo (con base de datos real en memoria)", () => {
   });
 
   it("lista las categorías con más gasto y su porcentaje", async () => {
-    const answer = await answerDemo("¿En qué gasté más este mes?");
+    const answer = await answerDemo(USER_A, "¿En qué gasté más este mes?");
     expect(answer).toMatch(/Q\s?5,000\.00/); // total del mes
     expect(answer).toMatch(/\*\*Vivienda\*\*: Q\s?3,000\.00 \(60%\)/);
     expect(answer.indexOf("Vivienda")).toBeLessThan(answer.indexOf("Comida"));
   });
 
   it("compara el mes actual contra el anterior", async () => {
-    const answer = await answerDemo("¿Cómo voy comparado con el mes pasado?");
+    const answer = await answerDemo(USER_A, "¿Cómo voy comparado con el mes pasado?");
     expect(answer).toMatch(/Gastos: Q\s?5,000\.00 \(\+400%\)/);
     expect(answer).toMatch(/subieron/);
   });
 
   it("responde el gasto de una categoría con la variación", async () => {
-    const answer = await answerDemo("¿Cuánto gasté en comida?");
+    const answer = await answerDemo(USER_A, "¿Cuánto gasté en comida?");
     expect(answer).toMatch(/Q\s?1,500\.00\*\* en Comida/);
     expect(answer).toMatch(/50% más que el mes anterior/);
   });
 
   it("calcula la tasa de ahorro", async () => {
-    expect(await answerDemo("¿Cuánto ahorré?")).toMatch(/\*\*38%\*\*/);
+    expect(await answerDemo(USER_A, "¿Cuánto ahorré?")).toMatch(/\*\*38%\*\*/);
   });
 
   it("los consejos usan el mayor gasto variable (no la vivienda)", async () => {
-    const answer = await answerDemo("Dame consejos para ahorrar");
+    const answer = await answerDemo(USER_A, "Dame consejos para ahorrar");
     expect(answer).toMatch(/\*\*Comida\*\* es tu mayor gasto variable/);
     expect(answer).toMatch(/Q\s?225\.00/); // 15% de Q1,500
   });
 
   it("explica qué puede responder si no entiende la pregunta", async () => {
-    expect(await answerDemo("¿Quién ganó el mundial?")).toMatch(/modo demo/);
+    expect(await answerDemo(USER_A, "¿Quién ganó el mundial?")).toMatch(/modo demo/);
   });
 
   it("no inventa datos de meses vacíos", async () => {
-    expect(await answerDemo("¿En qué gasté más en enero de 2020?")).toMatch(/No registraste gastos/);
+    expect(await answerDemo(USER_A, "¿En qué gasté más en enero de 2020?")).toMatch(/No registraste gastos/);
   });
 });
