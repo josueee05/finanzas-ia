@@ -2,7 +2,7 @@
 
 Aplicación web para controlar ingresos y gastos personales, con categorización automática y un asistente financiero impulsado por IA (en desarrollo).
 
-> 🚧 **Estado:** Fase 3 de 5 completada: transacciones, dashboard y categorización automática con IA.
+> 🚧 **Estado:** Fase 4 de 5 completada: transacciones, dashboard, categorización con IA y asistente conversacional.
 
 ## Funcionalidades
 
@@ -14,7 +14,7 @@ Aplicación web para controlar ingresos y gastos personales, con categorización
 - ✅ Categorías por tipo de movimiento, con validación en servidor
 - ✅ Datos de ejemplo de 6 meses para probar la app al instante
 - ✅ Categorización automática: escribes "Almuerzo en Pollo Campero" y la categoría se elige sola, con [Claude](https://www.anthropic.com/claude) o, sin API key, con un clasificador local
-- ⏳ Chat para hacerle preguntas a tus finanzas
+- ✅ Asistente: pregúntale a tus finanzas ("¿en qué gasté más este mes?", "¿cómo voy vs. el mes pasado?", "dame consejos para ahorrar") y responde con tus datos reales, en streaming
 - ⏳ Cuentas de usuario, tests automatizados y demo en línea
 
 ## Stack
@@ -45,7 +45,7 @@ No necesitas Docker ni cuentas externas: la base de datos es PostgreSQL real cor
 
 ### IA: modo demo o Claude
 
-La app funciona completa **sin ninguna API key**: en modo demo, la categoría se elige con un clasificador local de palabras clave en español (con comercios y servicios de Guatemala). Para usar Claude, copia `.env.example` como `.env.local` y agrega tu `ANTHROPIC_API_KEY`. La etiqueta junto a "Categoría" en el formulario indica el modo activo (✨ Demo / ✨ IA).
+La app funciona completa **sin ninguna API key**: en modo demo, la categoría se elige con un clasificador local de palabras clave en español (con comercios y servicios de Guatemala) y el asistente reconoce las preguntas más comunes (meses, categorías, comparaciones, consejos) y las responde con los datos reales. Para usar Claude, copia `.env.example` como `.env.local` y agrega tu `ANTHROPIC_API_KEY`. La etiqueta junto a "Categoría" en el formulario indica el modo activo (✨ Demo / ✨ IA).
 
 ### Scripts
 
@@ -76,6 +76,7 @@ src/
 │   └── index.ts                        # Conexión (lazy) a la base de datos
 └── lib/
     ├── ai/                             # Categorización: Claude, reglas locales y orquestador
+    ├── assistant/                      # Asistente: herramientas de datos, Claude y modo demo
     └── ...                             # Dinero, fechas, categorías, validación y tema
 drizzle/                                # Migraciones SQL generadas
 scripts/                                # migrate y seed
@@ -93,6 +94,10 @@ scripts/                                # migrate y seed
 - **IA con salidas estructuradas:** Claude responde un JSON validado contra un esquema Zod cuyo `enum` son exactamente las categorías válidas, así que nunca puede inventar una. La clasificación usa `effort: "low"` porque es una tarea simple (más rápido y barato).
 - **La IA nunca rompe la app:** si no hay API key, si la API falla o si rechaza la solicitud, se usa el clasificador local. Con una key inválida se desactiva Claude tras el primer error (en vez de reintentar en cada tecla), y las respuestas se guardan en caché para no pagar dos veces por la misma descripción.
 - **El usuario tiene la última palabra:** la categoría "✨ Automática" muestra en vivo dónde se guardará el movimiento (con *debounce* de 400 ms y descartando respuestas viejas); elegir una categoría a mano siempre gana.
+- **El asistente usa *tool use*, no datos pegados en el prompt:** Claude recibe 4 herramientas de solo lectura (`resumen_mes`, `gastos_por_categoria`, `buscar_movimientos`, `serie_mensual`) con esquemas Zod y decide cuáles llamar. El Tool Runner del SDK maneja el ciclo, y el prompt le prohíbe dar cifras que no vengan de una herramienta. El modo demo usa exactamente las mismas funciones de datos, así que ambos modos nunca se contradicen.
+- **Streaming con NDJSON:** `/api/chat` es un Route Handler que transmite eventos línea por línea (`status` → "Buscando movimientos…", `text` → fragmentos de la respuesta). El cliente los lee con `ReadableStream` y cancela la petición si el usuario sale de la página.
+- **Protección de costos:** límite de 20 preguntas por IP cada 10 minutos cuando la IA está activa, historial limitado a 20 mensajes de 2,000 caracteres, y la búsqueda por texto usa parámetros SQL (con `%` y `_` escapados).
+- **Markdown seguro:** las respuestas se renderizan con un mini parser propio que construye elementos de React (negritas y listas), nunca `innerHTML`, así que el texto de la IA no puede inyectar HTML.
 - **PGlite en desarrollo, Postgres gestionado en producción:** el mismo esquema y las mismas migraciones de Drizzle sirven para ambos.
 
 ## Roadmap
@@ -100,5 +105,5 @@ scripts/                                # migrate y seed
 - [x] **Fase 1:** base de datos y CRUD de transacciones
 - [x] **Fase 2:** dashboard con gráficas
 - [x] **Fase 3:** categorización automática con IA
-- [ ] **Fase 4:** chat con tus finanzas
+- [x] **Fase 4:** chat con tus finanzas
 - [ ] **Fase 5:** autenticación, tests, CI y deploy
