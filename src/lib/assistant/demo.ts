@@ -23,7 +23,7 @@ export function detectMonth(text: string, now = currentMonth()): string {
   if (/\b(mes pasado|mes anterior)\b/.test(text)) return addMonths(now, -1);
   if (/\b(antepasado|hace dos meses)\b/.test(text)) return addMonths(now, -2);
   const year = Number(/\b(20\d\d)\b/.exec(text)?.[1]);
-  const idx = MONTHS.findIndex((m) => new RegExp(`\\b${m === "septiembre" ? "sept?iembre" : m}\\b`).test(text));
+  const idx = MONTHS.findIndex((m) => new RegExp(`\\b${m === "septiembre" ? "sep?tiembre" : m}\\b`).test(text));
   if (idx === -1) return now;
 
   const mm = String(idx + 1).padStart(2, "0");
