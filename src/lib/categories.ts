@@ -2,6 +2,9 @@ import type { TransactionType } from "@/db/schema";
 
 export type Category = { id: string; label: string; emoji: string };
 
+/** Valor del <select> cuando el usuario deja que la IA elija la categoría. */
+export const AUTO_CATEGORY = "auto";
+
 export const CATEGORIES: Record<TransactionType, Category[]> = {
   gasto: [
     { id: "comida", label: "Comida", emoji: "🍔" },
