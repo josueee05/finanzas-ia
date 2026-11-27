@@ -7,6 +7,7 @@ import { Suspense } from "react";
 const LINKS = [
   { href: "/", label: "Resumen" },
   { href: "/transacciones", label: "Transacciones" },
+  { href: "/asistente", label: "Asistente" },
 ];
 
 /**
@@ -36,7 +37,7 @@ function Links({ pathname }: { pathname: string | null }) {
         key={href}
         href={href}
         aria-current={active ? "page" : undefined}
-        className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+        className={`rounded-md px-2 py-1.5 text-sm transition-colors sm:px-3 ${
           active
             ? "bg-black/5 font-medium text-foreground dark:bg-white/10"
             : "text-zinc-500 hover:text-foreground"
