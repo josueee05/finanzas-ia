@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.mts",
+    "db:migrate:prod": "tsx --env-file=.env.production.local scripts/migrate.mts",
     "db:seed": "tsx scripts/seed.mts",
     "db:setup": "pnpm db:migrate && pnpm db:seed"
   },

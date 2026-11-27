@@ -20,11 +20,16 @@ Guía para publicar la app gratis con **Vercel** (hosting) y **Neon** (PostgreSQ
 1. Entra a <https://neon.tech> con tu cuenta de GitHub y crea un proyecto (región cercana, p. ej. `US East`).
 2. En **Connection Details**, activa **Pooled connection** y copia la URL. Se ve así:
    `postgresql://usuario:clave@ep-xxxx-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
-3. Aplica las migraciones desde tu computadora (solo la primera vez y cada vez que agregues una migración):
+3. En la raíz del proyecto crea el archivo `.env.production.local` (git lo ignora, nunca se sube) con:
 
    ```bash
-   # PowerShell
-   $env:DATABASE_URL="postgresql://...pooler.../neondb?sslmode=require"; pnpm db:migrate
+   DATABASE_URL="postgresql://...pooler.../neondb?sslmode=require"
+   ```
+
+4. Aplica las migraciones (la primera vez y cada vez que agregues una migración):
+
+   ```bash
+   pnpm db:migrate:prod
    ```
 
    Debe decir `✅ Migraciones aplicadas (DATABASE_URL)`.
